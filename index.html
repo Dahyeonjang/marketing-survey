@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 사업 전용 마케팅 에이전트 제작 · 사전 진단</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* 팔레트 — 남색 하나 + 따뜻한 호박색 하나. 나머지는 이 둘의 농담과 무채색 */
+    :root {
+      --navy: #16233B;
+      --navy-deep: #0F1829;
+      --navy-mid: #2C3E66;
+      --navy-tint: #E8ECF4;
+      --navy-line: #C9D1E0;
+      --amber: #E08A3C;
+      --amber-deep: #B5651D;
+      --amber-tint: #FBEFE2;
+      --bg: #F4F5F8;
+      --card: #FFFFFF;
+      --text: #1C2230;
+      --muted: #6B7280;
+      --line: #DDE1EA;
+      --err: #C0392B;
+      --err-bg: #FFF3F3;
+      --err-line: #F0AAAA;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      background: var(--bg);
+      font-family: 'Noto Sans KR', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 16px 90px;
+      word-break: keep-all;
+      overflow-x: hidden;
+    }
+    #app { max-width: 720px; margin: 0 auto; }
+
+    /* 머리 */
+    .head {
+      background: var(--navy);
+      border-radius: 16px;
+      padding: 32px 28px 28px;
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+    }
+    .head::before {
+      content: '';
+      position: absolute; top: -70px; right: -50px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(224,138,60,0.16);
+    }
+    .head::after {
+      content: '';
+      position: absolute; bottom: -60px; left: 30px;
+      width: 150px; height: 150px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .head > * { position: relative; }
+    .head .eyebrow {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+      color: var(--amber); margin-bottom: 10px;
+    }
+    .head h1 { font-size: 21px; font-weight: 700; line-height: 1.45; margin-bottom: 14px; }
+    .head p { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,0.78); }
+    .head p + p { margin-top: 10px; }
+    .head .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 2px; }
+    .head .pill {
+      font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.1); color: #fff;
+    }
+    .head .pill.empty-ok { background: var(--amber); color: var(--navy-deep); font-weight: 700; }
+
+    /* 진행 */
+    .progress-wrap { margin-bottom: 16px; }
+    .progress-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 12px; color: var(--muted); margin-bottom: 6px;
+    }
+    .progress-top b { color: var(--navy); font-weight: 700; }
+    .progress-bg { background: var(--navy-line); border-radius: 999px; height: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 20%; background: var(--amber); border-radius: 999px; transition: width .35s ease; }
+
+    /* 섹션 탭 */
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tab {
+      font-size: 12px; padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--navy-line); background: var(--card); color: var(--muted);
+      cursor: pointer; transition: all .15s; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .tab .n {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--navy-tint); color: var(--navy); font-size: 10px; font-weight: 700;
+    }
+    .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .tab.active .n { background: var(--amber); color: var(--navy-deep); }
+    .tab.done { background: var(--amber-tint); color: var(--amber-deep); border-color: var(--amber); }
+    .tab.done .n { background: var(--amber); color: #fff; }
+
+    /* 카드 */
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 26px 24px; margin-bottom: 14px; display: none;
+    }
+    .card.visible { display: block; }
+    .sec-title { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .sec-desc {
+      font-size: 13px; color: var(--navy-mid); line-height: 1.7;
+      background: var(--navy-tint); border-radius: 10px; padding: 10px 14px; margin-bottom: 22px;
+    }
+
+    .q { margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid #F0F2F6; scroll-margin-top: 16px; }
+    .q:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .q-label { font-size: 14px; font-weight: 700; line-height: 1.65; margin-bottom: 8px; }
+    .req { color: var(--amber-deep); font-weight: 700; margin-left: 3px; }
+    .q-help { font-size: 12px; color: var(--muted); line-height: 1.65; margin-bottom: 10px; }
+    .q-lines {
+      font-size: 13px; line-height: 1.9; color: var(--text);
+      background: var(--amber-tint); border-left: 3px solid var(--amber);
+      border-radius: 0 10px 10px 0; padding: 10px 14px; margin: 2px 0 10px; white-space: pre-line;
+    }
+
+    .inp {
+      width: 100%; padding: 11px 14px; font-size: 14px; font-family: inherit;
+      border: 1px solid var(--navy-line); border-radius: 10px; background: #fff; color: var(--text);
+      resize: vertical; transition: border-color .15s, box-shadow .15s; line-height: 1.6;
+    }
+    .inp::placeholder { color: #A3AAB8; }
+    .inp:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(22,35,59,0.08); }
+    .inp.err { border-color: var(--err); background: var(--err-bg); }
+
+    .radios { display: flex; flex-direction: column; gap: 8px; }
+    .opt {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px;
+      border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 13.5px; transition: all .15s;
+    }
+    .opt:hover { border-color: var(--amber); background: var(--amber-tint); }
+    .opt input { accent-color: var(--navy); width: 16px; height: 16px; flex: none; }
+    .opt.selected { border-color: var(--navy); background: var(--navy-tint); font-weight: 500; }
+    .radios.err .opt { border-color: var(--err-line); }
+
+    .q-err {
+      display: none; margin-top: 8px; font-size: 12px; color: var(--err); font-weight: 500;
+    }
+    .q-err.visible { display: block; }
+
+    /* 파일 올리기 */
+    .drop {
+      display: block;
+      border: 1.5px dashed var(--navy-line); border-radius: 12px; padding: 20px 14px;
+      text-align: center; background: #FAFBFD; cursor: pointer; transition: all .15s;
+    }
+    .drop:hover, .drop.over { border-color: var(--amber); background: var(--amber-tint); }
+    .drop strong { display: block; font-size: 14px; color: var(--navy); margin-bottom: 4px; }
+    .drop span { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .drop input { display: none; }
+    .file-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .file-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 12.5px;
+    }
+    .file-item .thumb {
+      width: 36px; height: 36px; border-radius: 6px; flex: none; object-fit: cover;
+      background: var(--navy-tint); display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: var(--navy);
+    }
+    .file-item .meta { flex: 1; min-width: 0; }
+    .file-item .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .size { color: var(--muted); font-size: 11.5px; }
+    .file-item button {
+      flex: none; border: 1px solid var(--line); background: #fff; border-radius: 8px;
+      padding: 5px 9px; font-size: 12px; cursor: pointer; font-family: inherit; color: var(--muted);
+    }
+    .file-item button:hover { border-color: var(--err); color: var(--err); }
+    .file-sum { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .file-msg { display: none; margin-top: 8px; font-size: 12px; color: var(--err); line-height: 1.6; white-space: pre-line; }
+    .file-msg.visible { display: block; }
+
+    /* 이동 */
+    .global-err {
+      display: none; background: var(--err-bg); border: 1px solid var(--err-line); border-radius: 10px;
+      padding: 10px 14px; font-size: 12.5px; color: var(--err); margin-top: 12px; line-height: 1.6;
+    }
+    .global-err.visible { display: block; }
+    .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+    .btn {
+      padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 500; font-family: inherit;
+      cursor: pointer; border: 1px solid var(--navy-line); background: #fff; color: var(--text); transition: all .15s;
+    }
+    .btn:hover { background: var(--navy-tint); }
+    .btn-primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .btn-primary:hover { background: var(--navy-mid); }
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+    .draft-note { font-size: 11.5px; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.6; }
+
+    /* 완료 */
+    .overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15,24,41,0.86);
+      z-index: 100; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 24px 16px;
+    }
+    .overlay.visible { display: flex; }
+    .done-box {
+      background: #fff; border-radius: 16px; padding: 36px 28px 28px; max-width: 460px; width: 100%; margin: auto;
+    }
+    .done-mark {
+      width: 56px; height: 56px; border-radius: 50%; background: var(--amber-tint);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .done-mark svg { width: 28px; height: 28px; }
+    .done-box h2 { font-size: 20px; font-weight: 700; color: var(--navy); text-align: center; margin-bottom: 10px; }
+    .done-box > p { font-size: 14px; line-height: 1.8; color: var(--text); text-align: center; margin-bottom: 18px; }
+    .done-box .preview-note {
+      font-size: 11.5px; color: var(--muted); text-align: center; margin: -8px 0 16px; display: none;
+    }
+    .done-box .preview-note.visible { display: block; }
+    details.guide { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 18px; }
+    details.guide summary {
+      cursor: pointer; padding: 12px 14px; font-size: 13.5px; font-weight: 700; color: var(--navy);
+      list-style: none; display: flex; justify-content: space-between; align-items: center;
+    }
+    details.guide summary::-webkit-details-marker { display: none; }
+    details.guide summary::after { content: '열기'; font-size: 11.5px; font-weight: 500; color: var(--amber-deep); }
+    details.guide[open] summary::after { content: '접기'; }
+    details.guide .guide-body { padding: 0 14px 14px; font-size: 13px; line-height: 1.75; color: var(--text); }
+    .guide-body h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .guide-body h4 { font-size: 13px; font-weight: 700; color: var(--amber-deep); margin: 12px 0 4px; }
+    .guide-body ul { list-style: none; }
+    .guide-body li { padding-left: 12px; position: relative; }
+    .guide-body li::before { content: '·'; position: absolute; left: 0; }
+    .done-box .btn-primary { width: 100%; padding: 13px; }
+
+    @media (max-width: 480px) {
+      body { padding: 16px 12px 80px; }
+      .head { padding: 26px 20px 22px; border-radius: 14px; }
+      .head h1 { font-size: 19px; }
+      .card { padding: 20px 16px; }
+      .btn { padding: 12px 16px; font-size: 13.5px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <header class="head">
+    <div class="eyebrow">사전 진단</div>
+    <h1>내 사업 전용 마케팅 에이전트 제작 · 사전 진단</h1>
+    <p>이 답으로 대표님 사업에 맞춘 마케팅 에이전트를 세팅합니다.<br>
+    20~30분. 모르는 칸은 비워도 됩니다.</p>
+    <div class="pill-row">
+      <span class="pill">필수 9개</span><span class="pill">선택 6개</span><span class="pill">자료 올리기 2개</span>
+      <span class="pill empty-ok">모르면 비워도 됩니다</span>
+    </div>
+    <p>억지로 채운 답보다 비운 칸이 더 도움이 됩니다.<br>
+    고객 실명·연락처는 지워 주세요. 글이나 대화를 붙이실 때도 같습니다.<br>
+    자료는 로그인 없이 바로 올리실 수 있습니다.</p>
+    <p>제가 먼저 읽고, 사업 한 장으로 정리해 드린 뒤 세팅합니다.</p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span><b id="progLabel">1 / 5</b> · <span id="progSec">지금 상태</span></span>
+      <span>필수 <b id="progReq">0</b> / 9</span>
+    </div>
+    <div class="progress-bg"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button type="button" class="tab active" data-sec="0"><span class="n">1</span>지금 상태</button>
+    <button type="button" class="tab" data-sec="1"><span class="n">2</span>목표</button>
+    <button type="button" class="tab" data-sec="2"><span class="n">3</span>막힌 곳</button>
+    <button type="button" class="tab" data-sec="3"><span class="n">4</span>직접 쓰기·붙이기</button>
+    <button type="button" class="tab" data-sec="4"><span class="n">5</span>자료 올리기</button>
+  </nav>
+
+  <form id="form" novalidate autocomplete="off" onsubmit="return false">
+
+  <!-- 섹션 1 — 지금 상태 -->
+  <section class="card visible" id="sec0" data-sec="0">
+    <div class="sec-title">지금 상태</div>
+    <div class="sec-desc">지금 무엇을 어떻게 팔고 계신지 적어 주세요. 별표 없는 문항은 비워도 됩니다.</div>
+
+    <div class="q" id="blk-q1">
+      <div class="q-label">1. 무엇을, 누구에게, 얼마에 파시나요. 한 문장으로 적어 주세요.<span class="req">*</span></div>
+      <div class="q-help">예) 직장인에게 1:1 영어 과외를 월 24만원에</div>
+      <input class="inp" type="text" id="q1" data-q="q1">
+      <div class="q-err" id="err-q1">필수 문항입니다. 한 문장이면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q2">
+      <div class="q-label">2. 지난 3개월 동안 실제로 돈을 낸 분은 몇 명인가요. 마지막 한 분은 어떻게 알고 오셨나요.<span class="req">*</span></div>
+      <div class="q-help">숫자 하나와 한 분 이야기. 0명이면 0명이라고 적어 주세요.</div>
+      <textarea class="inp" rows="3" id="q2" data-q="q2"></textarea>
+      <div class="q-err" id="err-q2">필수 문항입니다. 0명이면 0명이라고 적어 주세요.</div>
+    </div>
+
+    <div class="q" id="blk-q3">
+      <div class="q-label">3. 지금 마케팅하고 있는 온·오프라인 채널(인스타그램, 네이버 블로그, 스레드 등)과 올리는 빈도를 적어 주세요.<span class="req">*</span></div>
+      <div class="q-help">한 줄에 한 곳. 예) 인스타그램 · 주 3번 / 블로그 · 월 1번 / 지인 소개만</div>
+      <textarea class="inp" rows="3" id="q3" data-q="q3"></textarea>
+      <div class="q-err" id="err-q3">필수 문항입니다. 한 줄에 한 곳이면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q4">
+      <div class="q-label">4. 아는 숫자만 적어 주세요 — 팔로워 · 한 달 조회 · 한 달 문의 · 그중 결제.</div>
+      <div class="q-help">정확하지 않아도 됩니다. 모르는 항목은 빼고 적어 주세요.</div>
+      <textarea class="inp" rows="3" id="q4" data-q="q4"></textarea>
+    </div>
+  </section>
+
+  <!-- 섹션 2 — 목표 -->
+  <section class="card" id="sec1" data-sec="1">
+    <div class="sec-title">목표</div>
+    <div class="sec-desc">어디까지 가고 싶은지, 그리고 어디까지는 안 갈지.</div>
+
+    <div class="q" id="blk-q5">
+      <div class="q-label">5. 석 달 뒤 무엇이 달라져 있으면 좋겠나요. 숫자 하나로 적어 주세요.<span class="req">*</span></div>
+      <div class="q-help">예) 한 달 문의 10건 / 수강생 8명 / 월 매출 300만원</div>
+      <input class="inp" type="text" id="q5" data-q="q5">
+      <div class="q-err" id="err-q5">필수 문항입니다. 숫자 하나면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q6">
+      <div class="q-label">6. 내 상품·서비스에서 내가 안 하는 것, 못 해 주는 것은 무엇인가요.</div>
+      <div class="q-help">예) 숙제 검사는 안 함 / 주말 수업은 없음 / 환불은 첫 주만</div>
+      <textarea class="inp" rows="3" id="q6" data-q="q6"></textarea>
+    </div>
+
+    <div class="q" id="blk-q7">
+      <div class="q-label">7. 마케팅에 쓸 수 있는 시간과 돈은 얼마인가요. 고객이 늘면 몇 명까지 감당되나요.</div>
+      <div class="q-help">일주일에 몇 시간 · 한 달에 얼마 · 몇 명까지</div>
+      <textarea class="inp" rows="3" id="q7" data-q="q7"></textarea>
+    </div>
+  </section>
+
+  <!-- 섹션 3 — 막힌 곳 -->
+  <section class="card" id="sec2" data-sec="2">
+    <div class="sec-title">막힌 곳</div>
+    <div class="sec-desc">지금 어디서 멈추는지. 고객이 한 말은 다듬지 말고 그대로 적어 주세요.</div>
+
+    <div class="q" id="blk-q8">
+      <div class="q-label">8. 지금 가장 답답한 것 하나를 골라 주세요.<span class="req">*</span></div>
+      <div class="q-help">둘 다 해당되면 더 오래된 쪽을 골라 주세요.</div>
+      <div class="radios" id="rg-q8">
+        <label class="opt"><input type="radio" name="q8" value="올려도 반응이 없다"> 올려도 반응이 없다</label>
+        <label class="opt"><input type="radio" name="q8" value="반응은 있는데 문의가 없다"> 반응은 있는데 문의가 없다</label>
+        <label class="opt"><input type="radio" name="q8" value="문의는 오는데 결제가 안 된다"> 문의는 오는데 결제가 안 된다</label>
+        <label class="opt"><input type="radio" name="q8" value="한 번 사고 다시 안 온다"> 한 번 사고 다시 안 온다</label>
+        <label class="opt"><input type="radio" name="q8" value="아직 올린 적이 없다"> 아직 올린 적이 없다</label>
+      </div>
+      <div class="q-err" id="err-q8">필수 문항입니다. 하나만 골라 주세요.</div>
+    </div>
+
+    <div class="q" id="blk-q9">
+      <div class="q-label">9. 고객이 결제 직전에 가장 자주 묻는 말은 무엇인가요.<span class="req">*</span></div>
+      <div class="q-help">고객 말 그대로. 두세 개면 다 적어 주세요.</div>
+      <textarea class="inp" rows="3" id="q9" data-q="q9"></textarea>
+      <div class="q-err" id="err-q9">필수 문항입니다. 고객 말 그대로 한 줄이면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q10">
+      <div class="q-label">10. 거절당했을 때 들은 말을 기억나는 대로 적어 주세요.</div>
+      <div class="q-help">「생각해 볼게요」 같은 짧은 말도 됩니다.</div>
+      <textarea class="inp" rows="3" id="q10" data-q="q10"></textarea>
+    </div>
+
+    <div class="q" id="blk-q11">
+      <div class="q-label">11. 구매하지 않은 고객은 대신 무엇을 쓰나요. 다시 온 분이 있다면 왜 다시 왔나요.</div>
+      <div class="q-help">짐작이면 「짐작」이라고 붙여 주세요.</div>
+      <textarea class="inp" rows="3" id="q11" data-q="q11"></textarea>
+    </div>
+  </section>
+
+  <!-- 섹션 4 — 직접 쓰기·붙이기 -->
+  <section class="card" id="sec3" data-sec="3">
+    <div class="sec-title">직접 쓰기·붙이기</div>
+    <div class="sec-desc">평소 쓰는 말 그대로가 가장 좋습니다. 잘 쓰려고 고치지 않으셔도 됩니다.</div>
+
+    <div class="q" id="blk-q12">
+      <div class="q-label">12. 고객이 "뭐 하시는 분이세요?" 하고 물으면 뭐라고 답하시나요. 평소 하는 말 그대로 두세 문장.<span class="req">*</span></div>
+      <div class="q-help">다듬지 말고 말하듯 적어 주세요.</div>
+      <textarea class="inp" rows="4" id="q12" data-q="q12"></textarea>
+      <div class="q-err" id="err-q12">필수 문항입니다. 말하듯 적어 주시면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q13">
+      <div class="q-label">13. 한 문장 키우기. 아래 세 줄을 옮겨 쓰고 빈칸만 채워 주세요.<span class="req">*</span></div>
+      <div class="q-lines">저는 ___을 팔아요
+___에게 팔아요
+___라서 지금 사야 해요</div>
+      <div class="q-help">안 떠오르는 줄은 빈칸 그대로 두셔도 됩니다. 셋째 줄은 시간·계절·상황 중 하나. 예) 면접이 2주 뒤라서 / 겨울이라서</div>
+      <textarea class="inp" rows="4" id="q13" data-q="q13" placeholder="저는 ___을 팔아요&#10;___에게 팔아요&#10;___라서 지금 사야 해요"></textarea>
+      <div class="q-err" id="err-q13">필수 문항입니다. 세 줄을 옮겨 쓰고, 안 떠오르는 줄은 빈칸 그대로 두셔도 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q14">
+      <div class="q-label">14. 가장 잘 된 글이나 영상 하나, 안 된 것 하나. 링크나 복붙으로 주세요.<span class="req">*</span></div>
+      <div class="q-help">링크는 공개 상태인지 확인해 주세요. 왜 잘 됐는지는 안 적으셔도 됩니다.</div>
+      <textarea class="inp" rows="5" id="q14" data-q="q14"></textarea>
+      <div class="q-err" id="err-q14">필수 문항입니다. 링크 하나, 또는 본문 복붙이면 됩니다.</div>
+    </div>
+
+    <div class="q" id="blk-q15">
+      <div class="q-label">15. 절대 하지 않을 것, 그리고 미리 해두고 싶은 말.</div>
+      <div class="q-help">「이런 말투는 싫다」 「이런 고객은 안 받는다」 같은 것.</div>
+      <textarea class="inp" rows="3" id="q15" data-q="q15"></textarea>
+    </div>
+  </section>
+
+  <!-- 섹션 5 — 자료 올리기 -->
+  <section class="card" id="sec4" data-sec="4">
+    <div class="sec-title">자료 올리기</div>
+    <div class="sec-desc">설문과 함께 볼 자료입니다. 올리기 어려운 것은 비워 두시고 완료 화면의 안내대로 보내 주세요.</div>
+
+    <div class="q" id="blk-q16">
+      <div class="q-label">16. 파일 올리기 — 후기 캡처 · 문의 대화 캡처 · 통계 캡처 · 가격표 · 말투가 잘 드러난 글.</div>
+      <div class="q-help">캡처는 원본 화질 그대로 올려 주세요. 고객 이름·연락처는 가린 뒤에.</div>
+      <label class="drop" id="drop" for="q16">
+        <strong>파일 고르기 또는 여기에 끌어다 놓기</strong>
+        <span>이미지·PDF · 파일당 10MB · 최대 10개</span>
+        <input type="file" id="q16" multiple accept="image/*,application/pdf">
+      </label>
+      <ul class="file-list" id="fileList"></ul>
+      <div class="file-sum" id="fileSum"></div>
+      <div class="file-msg" id="fileMsg"></div>
+    </div>
+
+    <div class="q" id="blk-q17">
+      <div class="q-label">17. 링크 붙여넣기 — 마케팅하고 있는 온·오프라인 채널 전부 · 최근 글이나 영상 5개 · 상세페이지 또는 랜딩.</div>
+      <div class="q-help">한 줄에 하나. 공개 상태인지 확인해 주세요.</div>
+      <textarea class="inp" rows="6" id="q17" data-q="q17"></textarea>
+    </div>
+  </section>
+
+  <div class="global-err" id="globalErr"></div>
+
+  <div class="nav">
+    <button type="button" class="btn" id="btnPrev" disabled>← 이전</button>
+    <button type="button" class="btn btn-primary" id="btnNext">다음 →</button>
+  </div>
+  <div class="draft-note">작성 중인 답은 이 기기에 임시 저장됩니다. 새로고침해도 남고, 제출하면 지워집니다.<br>파일은 임시 저장되지 않습니다 — 제출 직전에 올려 주세요.</div>
+
+  </form>
+</div>
+
+<!-- 완료 화면 -->
+<div class="overlay" id="doneOverlay" role="dialog" aria-modal="true">
+  <div class="done-box">
+    <div class="done-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#B5651D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h2>받았습니다.</h2>
+    <p>자료를 올리지 못하셨으면 카카오톡으로 보내 주세요.<br>사업 한 장은 자료를 받은 뒤 3일 안에 드립니다.</p>
+    <div class="preview-note" id="previewNote">미리보기 모드 — 서버로 보내지 않았습니다. 답은 브라우저 콘솔에 찍혔습니다.</div>
+
+    <details class="guide">
+      <summary>자료를 못 올리셨다면</summary>
+      <div class="guide-body">
+        <h3>설문과 함께 보실 자료</h3>
+        <p>설문 감사합니다. 아래 자료를 받으면 사업 한 장을 짓습니다.</p>
+        <h4>꼭 보내 주실 것</h4>
+        <ul>
+          <li>마케팅하고 있는 온·오프라인 채널 링크 전부 — 인스타그램 · 블로그 · 유튜브 · 스레드 등</li>
+          <li>최근에 올린 글이나 영상 5개</li>
+          <li>상세페이지 또는 랜딩 페이지 링크. 없으면 「없음」</li>
+          <li>가격표. 글로 적힌 것이 없으면 평소 말하는 대로 한 줄</li>
+          <li>후기 전부 캡처</li>
+          <li>고객과 나눈 문의 대화 3~5개 캡처</li>
+          <li>내 말투가 가장 잘 드러난 글 1개</li>
+        </ul>
+        <h4>있으면 보내 주실 것</h4>
+        <ul>
+          <li>통계 화면 캡처 — 인스타 인사이트 · 블로그 통계 · 유튜브 스튜디오</li>
+        </ul>
+        <h4>가리는 법</h4>
+        <ul>
+          <li>캡처하기 전에 고객 이름 · 프로필 사진 · 전화번호 · 아이디를 가립니다. 폰 사진 편집의 「마크업」이나 카카오톡 캡처의 모자이크면 됩니다.</li>
+          <li>가리기 어려우면 내용만 복사해 붙이고 이름은 「고객 A」 「고객 B」로 바꿔 주세요.</li>
+          <li>이름이나 연락처가 남은 자료는 지운 뒤에만 씁니다.</li>
+          <li>캡처는 원본 화질 그대로 보내 주세요.</li>
+        </ul>
+        <h4>보내는 곳</h4>
+        <ul>
+          <li>설문 안 「자료 올리기」에 파일과 링크로 올려 주세요. 로그인은 필요 없습니다.</li>
+          <li>올리기 어려운 자료만 카카오톡으로 보내 주세요.</li>
+        </ul>
+      </div>
+    </details>
+
+    <button type="button" class="btn btn-primary" id="btnDone">확인</button>
+  </div>
+</div>
+
+<script>
+// ───────────────────────────────────────────────
+// 설정
+// ───────────────────────────────────────────────
+// 앱스 스크립트 웹 앱 URL. 비어 있으면 「미리보기 모드」 — 서버로 보내지 않고 콘솔에 JSON을 찍는다.
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-ya2A-EUXTquDi2fiLMoSGfGmrRnFoN2sPVOz7r5skxUrUHzmNWgon9aUmzZpnCE42Q/exec";
+const STORAGE_KEY = "somun-survey-draft-v1";
+const SECTIONS = ["지금 상태", "목표", "막힌 곳", "직접 쓰기·붙이기", "자료 올리기"];
+const REQUIRED = ["q1", "q2", "q3", "q5", "q8", "q9", "q12", "q13", "q14"];
+const SECTION_Q = [["q1","q2","q3","q4"], ["q5","q6","q7"], ["q8","q9","q10","q11"], ["q12","q13","q14","q15"], ["q16","q17"]];
+const TEXT_Q = ["q1","q2","q3","q4","q5","q6","q7","q9","q10","q11","q12","q13","q14","q15","q17"];
+const FILE_MAX_EACH = 10 * 1024 * 1024;   // 파일당 10MB
+const FILE_MAX_COUNT = 10;                // 총 10개
+const FILE_MAX_TOTAL = 50 * 1024 * 1024;  // 총 50MB
+
+let current = 0;
+let files = [];        // {file, name, type, size}
+let submitting = false;
+const $ = (id) => document.getElementById(id);
+
+// ───────────────────────────────────────────────
+// 답 읽기 · 쓰기
+// ───────────────────────────────────────────────
+function getAnswer(q) {
+  if (q === "q8") { const c = document.querySelector('input[name="q8"]:checked'); return c ? c.value : ""; }
+  if (q === "q16") return files.map(f => f.name);
+  const el = $(q); return el ? el.value : "";
+}
+function setAnswer(q, val) {
+  if (q === "q8") {
+    document.querySelectorAll('input[name="q8"]').forEach(r => { r.checked = (r.value === val); r.closest(".opt").classList.toggle("selected", r.value === val); });
+    return;
+  }
+  const el = $(q); if (el) el.value = val || "";
+}
+function allAnswers() { const a = {}; for (let i = 1; i <= 17; i++) a["q" + i] = getAnswer("q" + i); return a; }
+function isFilled(q) { const v = getAnswer(q); return Array.isArray(v) ? v.length > 0 : String(v).trim().length > 0; }
+
+// 임시 저장 (파일 제외)
+function saveDraft() {
+  try {
+    const d = {}; TEXT_Q.forEach(q => d[q] = getAnswer(q)); d.q8 = getAnswer("q8"); d._sec = current;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  } catch (e) {}
+}
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return false;
+    const d = JSON.parse(raw);
+    TEXT_Q.forEach(q => { if (d[q] != null) setAnswer(q, d[q]); });
+    if (d.q8) setAnswer("q8", d.q8);
+    if (typeof d._sec === "number" && d._sec >= 0 && d._sec < 5) current = d._sec;
+    return true;
+  } catch (e) { return false; }
+}
+function clearDraft() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+
+// ───────────────────────────────────────────────
+// 화면
+// ───────────────────────────────────────────────
+function requiredDone() { return REQUIRED.filter(isFilled).length; }
+function sectionHasRequired(i) { return SECTION_Q[i].some(q => REQUIRED.includes(q)); }
+function sectionDone(i) { return sectionHasRequired(i) && SECTION_Q[i].filter(q => REQUIRED.includes(q)).every(isFilled); }
+
+function render() {
+  document.querySelectorAll(".card").forEach((c, i) => c.classList.toggle("visible", i === current));
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    t.classList.toggle("active", i === current);
+    t.classList.toggle("done", i !== current && sectionDone(i));
+  });
+  $("progLabel").textContent = (current + 1) + " / 5";
+  $("progSec").textContent = SECTIONS[current];
+  $("progReq").textContent = requiredDone();
+  $("progFill").style.width = Math.round((current + 1) / 5 * 100) + "%";
+  $("btnPrev").disabled = current === 0;
+  $("btnNext").textContent = current === 4 ? (submitting ? "보내는 중…" : "제출하기 ✓") : "다음 →";
+  $("btnNext").disabled = submitting;
+}
+
+function clearErrors() {
+  document.querySelectorAll(".q-err.visible").forEach(e => e.classList.remove("visible"));
+  document.querySelectorAll(".inp.err").forEach(e => e.classList.remove("err"));
+  document.querySelectorAll(".radios.err").forEach(e => e.classList.remove("err"));
+  $("globalErr").classList.remove("visible");
+}
+function markError(q) {
+  const err = $("err-" + q); if (err) err.classList.add("visible");
+  if (q === "q8") $("rg-q8").classList.add("err"); else { const el = $(q); if (el) el.classList.add("err"); }
+}
+function sectionOf(q) { return SECTION_Q.findIndex(list => list.includes(q)); }
+
+// 빠진 필수를 돌려준다. scope: 섹션 번호 또는 "all"
+function validate(scope) {
+  const list = scope === "all" ? REQUIRED : REQUIRED.filter(q => SECTION_Q[scope].includes(q));
+  return list.filter(q => !isFilled(q));
+}
+function showMissing(missing) {
+  clearErrors();
+  missing.forEach(markError);
+  const first = missing[0];
+  const sec = sectionOf(first);
+  if (sec !== current) { current = sec; render(); }
+  $("globalErr").textContent = "필수 문항 " + missing.length + "개가 비어 있습니다. 별표(*) 문항만 채우시면 됩니다.";
+  $("globalErr").classList.add("visible");
+  const blk = $("blk-" + first);
+  if (blk) blk.scrollIntoView({ behavior: "smooth", block: "start" });
+  const el = first === "q8" ? document.querySelector('input[name="q8"]') : $(first);
+  if (el) setTimeout(() => el.focus({ preventScroll: true }), 350);
+}
+
+function goTo(i) {
+  if (i < 0 || i > 4) return;
+  clearErrors();
+  current = i; render(); saveDraft();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function next() {
+  if (current < 4) {
+    const missing = validate(current);
+    if (missing.length) { showMissing(missing); return; }
+    goTo(current + 1);
+  } else {
+    submit();
+  }
+}
+
+// ───────────────────────────────────────────────
+// 파일
+// ───────────────────────────────────────────────
+function fmtSize(n) { return n >= 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB"; }
+function fileTotal() { return files.reduce((s, f) => s + f.size, 0); }
+function fileMsg(text) { const m = $("fileMsg"); m.textContent = text || ""; m.classList.toggle("visible", !!text); }
+
+function addFiles(list) {
+  const rejected = [];
+  Array.from(list).forEach(file => {
+    const okType = /^image\//.test(file.type) || file.type === "application/pdf" || /\.(png|jpe?g|gif|webp|heic|pdf)$/i.test(file.name);
+    if (!okType) { rejected.push(file.name + " — 이미지·PDF만 올릴 수 있습니다"); return; }
+    if (file.size > FILE_MAX_EACH) { rejected.push(file.name + " — 파일당 10MB까지입니다 (" + fmtSize(file.size) + ")"); return; }
+    if (files.length >= FILE_MAX_COUNT) { rejected.push(file.name + " — 최대 10개까지입니다"); return; }
+    if (fileTotal() + file.size > FILE_MAX_TOTAL) { rejected.push(file.name + " — 전체 50MB를 넘습니다"); return; }
+    if (files.some(f => f.name === file.name && f.size === file.size)) { rejected.push(file.name + " — 이미 올린 파일입니다"); return; }
+    files.push({ file, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+  });
+  fileMsg(rejected.length ? rejected.join("\n") : "");
+  renderFiles();
+}
+function removeFile(i) { files.splice(i, 1); fileMsg(""); renderFiles(); }
+function renderFiles() {
+  const ul = $("fileList"); ul.innerHTML = "";
+  files.forEach((f, i) => {
+    const li = document.createElement("li"); li.className = "file-item";
+    let thumb;
+    if (/^image\//.test(f.type)) { thumb = document.createElement("img"); thumb.className = "thumb"; thumb.alt = ""; thumb.src = URL.createObjectURL(f.file); }
+    else { thumb = document.createElement("div"); thumb.className = "thumb"; thumb.textContent = "PDF"; }
+    const meta = document.createElement("div"); meta.className = "meta";
+    meta.innerHTML = '<div class="name"></div><div class="size"></div>';
+    meta.querySelector(".name").textContent = f.name; meta.querySelector(".size").textContent = fmtSize(f.size);
+    const btn = document.createElement("button"); btn.type = "button"; btn.textContent = "삭제"; btn.addEventListener("click", () => removeFile(i));
+    li.append(thumb, meta, btn); ul.appendChild(li);
+  });
+  $("fileSum").textContent = files.length ? files.length + "개 · " + fmtSize(fileTotal()) + " / 50MB" : "";
+  render();
+}
+function readAsBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1] || "");
+    r.onerror = () => rej(new Error("파일을 읽지 못했습니다: " + file.name));
+    r.readAsDataURL(file);
+  });
+}
+
+// ───────────────────────────────────────────────
+// 제출
+// ───────────────────────────────────────────────
+async function buildPayload() {
+  const encoded = [];
+  for (const f of files) encoded.push({ name: f.name, type: f.type, size: f.size, base64: await readAsBase64(f.file) });
+  const answers = allAnswers();
+  return { submittedAt: new Date().toISOString(), answers, files: encoded, links: answers.q17 };
+}
+
+async function submit() {
+  if (submitting) return;
+  const missing = validate("all");
+  if (missing.length) { showMissing(missing); return; }
+  if (fileTotal() > FILE_MAX_TOTAL) { fileMsg("파일 전체가 50MB를 넘습니다. 몇 개를 빼 주세요."); $("blk-q16").scrollIntoView({ behavior: "smooth" }); return; }
+  clearErrors();
+  submitting = true; render();
+  try {
+    const payload = await buildPayload();
+    window.__somunLastPayload = payload;
+    if (!WEB_APP_URL) {
+      // 미리보기 모드
+      const printable = JSON.parse(JSON.stringify(payload));
+      printable.files = printable.files.map(f => ({ ...f, base64: "<base64 " + f.base64.length + "자>" }));
+      console.log("[somun-survey] 미리보기 모드 — 보낼 JSON:\n" + JSON.stringify(printable, null, 2));
+      showDone(true);
+      return;
+    }
+    // 본문을 text/plain으로 보내면 preflight 없이 앱스 스크립트 웹 앱이 받는다(application/json으로 보내면 CORS preflight에서 막힌다).
+    const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }, redirect: "follow" });
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok || !data || data.ok !== true) throw new Error((data && data.error) || ("서버 응답 " + res.status));
+    showDone(false);
+  } catch (e) {
+    $("globalErr").textContent = "보내지 못했습니다. 잠시 뒤 다시 눌러 주세요. 계속 안 되면 카카오톡으로 알려 주세요. (" + (e && e.message ? e.message : e) + ")";
+    $("globalErr").classList.add("visible");
+  } finally {
+    submitting = false; render();
+  }
+}
+
+function showDone(preview) {
+  $("previewNote").classList.toggle("visible", !!preview);
+  $("doneOverlay").classList.add("visible");
+  clearDraft();
+}
+function resetForm() {
+  TEXT_Q.forEach(q => setAnswer(q, ""));
+  setAnswer("q8", "");
+  files = []; renderFiles(); fileMsg("");
+  clearErrors(); clearDraft();
+  current = 0; render();
+  $("doneOverlay").classList.remove("visible");
+  window.scrollTo({ top: 0 });
+}
+
+// ───────────────────────────────────────────────
+// 배선
+// ───────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => goTo(Number(t.dataset.sec))));
+$("btnPrev").addEventListener("click", () => goTo(current - 1));
+$("btnNext").addEventListener("click", next);
+$("btnDone").addEventListener("click", resetForm);
+
+TEXT_Q.forEach(q => { const el = $(q); el.addEventListener("input", () => { el.classList.remove("err"); const e = $("err-" + q); if (e) e.classList.remove("visible"); saveDraft(); render(); }); });
+document.querySelectorAll(".opt").forEach(opt => {
+  opt.addEventListener("click", () => {
+    const input = opt.querySelector("input");
+    document.querySelectorAll('input[name="' + input.name + '"]').forEach(r => r.closest(".opt").classList.remove("selected"));
+    opt.classList.add("selected");
+    $("rg-q8").classList.remove("err"); $("err-q8").classList.remove("visible");
+    saveDraft(); render();
+  });
+});
+
+const drop = $("drop");
+$("q16").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+
+$("doneOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) resetForm(); });
+
+// 시작
+loadDraft();
+render();
+
+// 검증용 훅 (화면에는 영향 없음)
+window.__somun = {
+  get current() { return current; }, goTo, next, validate, setAnswer, getAnswer, allAnswers, buildPayload, submit, resetForm,
+  addFiles, removeFile, get files() { return files; }, requiredDone, saveDraft, loadDraft,
+  snapshot() {
+    return {
+      current, title: $("progSec").textContent, prog: $("progLabel").textContent, req: $("progReq").textContent,
+      fill: $("progFill").style.width, nextBtn: $("btnNext").textContent, prevDisabled: $("btnPrev").disabled,
+      tabs: Array.from(document.querySelectorAll(".tab")).map(t => t.className.replace("tab", "").trim() || "-"),
+      visibleCard: Array.from(document.querySelectorAll(".card")).findIndex(c => getComputedStyle(c).display !== "none"),
+      errors: Array.from(document.querySelectorAll(".q-err")).filter(e => getComputedStyle(e).display !== "none").map(e => e.id),
+      globalErr: getComputedStyle($("globalErr")).display !== "none" ? $("globalErr").textContent : "",
+      overlay: getComputedStyle($("doneOverlay")).display !== "none",
+      fileSum: $("fileSum").textContent, fileMsg: $("fileMsg").textContent
+    };
+  }
+};
+</script>
+</body>
+</html>
